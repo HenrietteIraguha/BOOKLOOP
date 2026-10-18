@@ -1,4 +1,5 @@
 from datetime import date
+from django.conf import settings
 
 from django.db import models
 
@@ -115,3 +116,49 @@ class InventoryLot(models.Model):
 
     def __str__(self):
         return f"{self.book.title}: {self.quantity} ({self.get_condition_display()})"
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._original_status = self.status
+
+        self._changed_by = None
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        status_changed = self.status != self._original_status
+        super().save(*args, **kwargs)
+
+        if is_new or status_changed:
+            StatusHistory.objects.create(
+                lot=self,
+                old_status="" if is_new else self._original_status,
+                new_status=self.status,
+                changed_by=self._changed_by,
+            )
+        self._original_status = self.status
+
+
+class StatusHistory(models.Model):
+    """One logbook entry: a lot's status changed from one value to another."""
+
+    lot = models.ForeignKey(
+        InventoryLot, on_delete=models.PROTECT, related_name="history"
+    )
+    old_status = models.CharField(max_length=20, blank=True)
+    new_status = models.CharField(max_length=20)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+        verbose_name_plural = "status history"
+
+    def __str__(self):
+        old = self.old_status or "new"
+        return f"{self.lot}: {old} -> {self.new_status}"
