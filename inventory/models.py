@@ -1,7 +1,6 @@
-from django.db import models
+from datetime import date
 
 from django.db import models
-
 
 class Book(models.Model):
     
@@ -68,3 +67,51 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class InventoryLot(models.Model):
+    """A group of identical copies of one book, with the same condition.
+    Example: 9 copies of 'Primary 4 English' in good condition."""
+
+    class Condition(models.TextChoices):
+        NEW = "new", "New"
+        GOOD = "good", "Good"
+        FAIR = "fair", "Fair (some wear)"
+        POOR = "poor", "Poor"
+
+    class Status(models.TextChoices):
+        PENDING_ASSESSMENT = "pending_assessment", "Pending assessment"
+        ACCEPTED = "accepted", "Accepted"
+        REJECTED = "rejected", "Rejected"
+        IN_STORAGE = "in_storage", "In storage"
+        ALLOCATED = "allocated", "Allocated"
+        DISTRIBUTED = "distributed", "Distributed"
+
+    # Which book these copies are (FR-01)
+    book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name="lots")
+
+    # Condition and quantity (FR-01, FR-08)
+    condition = models.CharField(max_length=10, choices=Condition.choices)
+    quantity = models.PositiveIntegerField()
+
+    # Where the lot is in the process (FR-07, FR-09)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING_ASSESSMENT,
+
+    )
+
+    storage_location = models.CharField(max_length=100, blank=True)
+    date_collected = models.DateField(default=date.today)
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date_collected"]
+
+    def __str__(self):
+        return f"{self.book.title}: {self.quantity} ({self.get_condition_display()})"
