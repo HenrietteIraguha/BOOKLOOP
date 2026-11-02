@@ -2,11 +2,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.core.paginator import Paginator
+from django.db.models import Q, Sum
 
 from .forms import BookForm, LotForm
 from .isbn import lookup_isbn, normalise_isbn
-from .models import Book
-
+from .models import Book, InventoryLot
 
 SUGGESTED_FIELDS = ["title", "author", "publisher"]
 
@@ -91,4 +92,54 @@ def register_book(request):
         "book_form": book_form,
         "lot_form": lot_form,
         "suggestion": suggestion,
+    })
+
+
+
+INVENTORY_FILTERS = [
+    ("language", "Language", "book__language", Book.Language.choices),
+    ("book_type", "Type", "book__book_type", Book.BookType.choices),
+    ("education_level", "Level", "book__education_level", Book.EducationLevel.choices),
+    ("condition", "Condition", "condition", InventoryLot.Condition.choices),
+    ("status", "Status", "status", InventoryLot.Status.choices),
+]
+
+
+@login_required
+@permission_required("inventory.view_inventorylot", raise_exception=True)
+def inventory_list(request):
+    """Search and filter the inventory (FR-18)."""
+    lots = InventoryLot.objects.select_related("book")
+
+    query = request.GET.get("q", "").strip()
+    if query:
+        lots = lots.filter(
+            Q(book__title__icontains=query)
+            | Q(book__author__icontains=query)
+            | Q(book__isbn__icontains=query)
+            | Q(book__subject__icontains=query)
+        )
+
+    filters = []
+    for name, label, field, choices in INVENTORY_FILTERS:
+        selected = request.GET.get(name, "")
+        if selected:
+            lots = lots.filter(**{field: selected})
+        filters.append({"name": name, "label": label, "choices": choices, "selected": selected})
+
+    lots = lots.order_by("book__title", "-date_collected")
+    total_copies = lots.aggregate(total=Sum("quantity"))["total"] or 0
+    page = Paginator(lots, 25).get_page(request.GET.get("page"))
+
+
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    return render(request, "inventory/inventory_list.html", {
+        "page": page,
+        "query": query,
+        "filters": filters,
+        "total_lots": page.paginator.count,
+        "total_copies": total_copies,
+        "querystring": params.urlencode(),
     })

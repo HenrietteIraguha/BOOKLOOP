@@ -24,7 +24,7 @@
   <h3>Quick links</h3>
   <ul>
     <li><a href="{% url 'inventory:register_book' %}">Register a book</a></li>
-    <li>Search inventory (coming soon)</li>
+    <li><a href="{% url 'inventory:list' %}">Search inventory</a></li>
     {% if user.is_staff %}
       <li><a href="/admin/">Admin panel</a></li>
     {% endif %}

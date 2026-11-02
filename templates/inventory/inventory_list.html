@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  .filters input, .filters select { padding: 7px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .filters label { display: block; font-size: 13px; font-weight: bold; }
+  .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; display: inline-block; }
+  .btn-light { background: #dae8fc; color: #2f4f80; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e8f0; }
+  th { background: #dae8fc; color: #2f4f80; }
+  .status { padding: 2px 8px; border-radius: 10px; font-size: 12px; background: #eef3fb; }
+  .status-accepted { background: #e3f4e1; color: #2e6b25; }
+  .status-rejected { background: #fbe4e4; color: #a32d2d; }
+  .pager { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+  <h1>Inventory</h1>
+  <a href="{% url 'inventory:register_book' %}" class="btn">+ Register a book</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <div style="flex: 2; min-width: 200px;">
+      <label for="q">Search</label>
+      <input type="text" id="q" name="q" value="{{ query }}" placeholder="Title, author, ISBN or subject" style="width: 100%;">
+    </div>
+    {% for f in filters %}
+      <div>
+        <label for="{{ f.name }}">{{ f.label }}</label>
+        <select id="{{ f.name }}" name="{{ f.name }}">
+          <option value="">All</option>
+          {% for value, text in f.choices %}
+            <option value="{{ value }}" {% if value == f.selected %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn">Search</button>
+    <a href="{% url 'inventory:list' %}" class="btn btn-light">Clear</a>
+  </form>
+</div>
+
+<p><strong>{{ total_lots }}</strong> lot{{ total_lots|pluralize }} found, <strong>{{ total_copies }}</strong> cop{{ total_copies|pluralize:"y,ies" }} in total.</p>
+
+<div class="card table-wrap">
+  {% if page.object_list %}
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th><th>Author</th><th>ISBN</th><th>Language</th><th>Level</th>
+          <th>Condition</th><th>Qty</th><th>Status</th><th>Collected</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lot in page.object_list %}
+          <tr>
+            <td>{{ lot.book.title }}</td>
+            <td>{{ lot.book.author|default:"-" }}</td>
+            <td>{{ lot.book.isbn|default:"-" }}</td>
+            <td>{{ lot.book.get_language_display }}</td>
+            <td>{{ lot.book.get_education_level_display }}</td>
+            <td>{{ lot.get_condition_display }}</td>
+            <td>{{ lot.quantity }}</td>
+            <td><span class="status status-{{ lot.status }}">{{ lot.get_status_display }}</span></td>
+            <td>{{ lot.date_collected|date:"d M Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No books match your search.</p>
+  {% endif %}
+</div>
+
+{% if page.has_other_pages %}
+  <div class="pager">
+    {% if page.has_previous %}
+      <a class="btn btn-light" href="?{{ querystring }}&page={{ page.previous_page_number }}">Previous</a>
+    {% endif %}
+    <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}
+      <a class="btn btn-light" href="?{{ querystring }}&page={{ page.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
