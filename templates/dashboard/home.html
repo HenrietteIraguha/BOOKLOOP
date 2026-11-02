@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | BookLoop{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ user.username }}</h1>
+
+<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+  <div class="card" style="flex: 1; min-width: 180px;">
+    <p>Book titles</p>
+    <h2>{{ book_count }}</h2>
+  </div>
+  <div class="card" style="flex: 1; min-width: 180px;">
+    <p>Inventory lots</p>
+    <h2>{{ lot_count }}</h2>
+  </div>
+  <div class="card" style="flex: 1; min-width: 180px;">
+    <p>Copies available</p>
+    <h2>{{ available_copies }}</h2>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Quick links</h3>
+  <ul>
+    <li>Register a book (coming next)</li>
+    <li>Search inventory (coming soon)</li>
+    {% if user.is_staff %}
+      <li><a href="/admin/">Admin panel</a></li>
+    {% endif %}
+  </ul>
+</div>
+{% endblock %}

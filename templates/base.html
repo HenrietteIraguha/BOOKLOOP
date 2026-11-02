@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BookLoop{% endblock %}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fa; color: #222; }
+    header { background: #2f4f80; color: white; padding: 12px 20px;
+             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header a { color: white; text-decoration: none; margin-right: 16px; }
+    header .brand { font-weight: bold; font-size: 20px; }
+    header button { background: white; color: #2f4f80; border: none; padding: 6px 12px;
+                    border-radius: 4px; cursor: pointer; }
+    main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .messages { list-style: none; padding: 0; }
+    .messages li { background: #dae8fc; padding: 10px; border-radius: 4px; margin-bottom: 8px; }
+    .error { color: #a32d2d; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{% url 'dashboard:home' %}" class="brand">BookLoop</a>
+    {% if user.is_authenticated %}
+      <nav>
+        <a href="{% url 'dashboard:home' %}">Home</a>
+        <span>Logged in as {{ user.username }}</span>
+      </nav>
+
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+      </form>
+    {% endif %}
+  </header>
+
+  <main>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
