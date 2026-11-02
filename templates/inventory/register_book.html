@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Register a book | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: bold; margin-bottom: 4px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 8px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .help { font-size: 13px; color: #666; }
+  .isbn-row { display: flex; gap: 8px; }
+  .isbn-row input { flex: 1; }
+  .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+  .btn-light { background: #dae8fc; color: #2f4f80; }
+  .btn-main { background: #2f4f80; color: white; width: 100%; padding: 12px; font-size: 16px; }
+  .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  @media (max-width: 600px) { .two-cols { grid-template-columns: 1fr; } }
+</style>
+
+<h1>Register a book</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for field, value in suggestion.items %}
+    <input type="hidden" name="suggested_{{ field }}" value="{{ value }}">
+  {% endfor %}
+
+  <div class="card">
+    <h3>1. Identify the book</h3>
+    <div class="field">
+      <label for="{{ book_form.isbn.id_for_label }}">ISBN</label>
+      <div class="isbn-row">
+        {{ book_form.isbn }}
+        <button type="submit" name="action" value="lookup" class="btn btn-light" formnovalidate>Look up</button>
+      </div>
+      <span class="help">{{ book_form.isbn.help_text }}</span>
+      <span class="error">{{ book_form.isbn.errors }}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>2. Book details</h3>
+    <p class="help">Check any details that were filled in automatically, and complete the rest.</p>
+    <div class="two-cols">
+      {% for field in book_form %}
+        {% if field.name != "isbn" %}
+          <div class="field">
+            {{ field.label_tag }}
+            {{ field }}
+            <span class="error">{{ field.errors }}</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>3. Copies received</h3>
+    <div class="two-cols">
+      {% for field in lot_form %}
+        <div class="field">
+          {{ field.label_tag }}
+          {{ field }}
+          <span class="error">{{ field.errors }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <button type="submit" name="action" value="save" class="btn btn-main">Save book</button>
+</form>
+{% endblock %}

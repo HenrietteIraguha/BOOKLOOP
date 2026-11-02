@@ -23,7 +23,7 @@
 <div class="card">
   <h3>Quick links</h3>
   <ul>
-    <li>Register a book (coming next)</li>
+    <li><a href="{% url 'inventory:register_book' %}">Register a book</a></li>
     <li>Search inventory (coming soon)</li>
     {% if user.is_staff %}
       <li><a href="/admin/">Admin panel</a></li>
