@@ -27,7 +27,7 @@
     <a href="{% url 'dashboard:home' %}" class="brand">BookLoop</a>
     {% if user.is_authenticated %}
       <nav>
-        <a href="{% url 'dashboard:home' %}">Home</a>
+        <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'public:donate' %}{% endif %}" class="brand">BookLoop</a>
         <a href="{% url 'inventory:register_book' %}">Register a book</a>
         <a href="{% url 'inventory:list' %}">Inventory</a>
         <span>Logged in as {{ user.username }}</span>

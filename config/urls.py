@@ -7,5 +7,6 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),  # login and logout
     path("dashboard/", include("dashboard.urls")),
     path("inventory/", include("inventory.urls")),
-    path("", RedirectView.as_view(pattern_name="dashboard:home")),  # temporary, until the public site exists
+    path("", include("public.urls")),
+    path("", RedirectView.as_view(pattern_name="public:donate")),  
 ]

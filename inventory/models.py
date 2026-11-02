@@ -89,10 +89,16 @@ class InventoryLot(models.Model):
         ALLOCATED = "allocated", "Allocated"
         DISTRIBUTED = "distributed", "Distributed"
 
-    # Which book these copies are (FR-01)
     book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name="lots")
 
-    # Condition and quantity (FR-01, FR-08)
+    donation = models.ForeignKey(
+        "donations.DonationSubmission",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lots",
+    )
+
     condition = models.CharField(max_length=10, choices=Condition.choices)
     quantity = models.PositiveIntegerField()
 

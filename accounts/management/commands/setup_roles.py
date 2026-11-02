@@ -9,6 +9,11 @@ OPERATOR_PERMISSIONS = [
     "change_inventorylot",
     "view_inventorylot",
     "view_statushistory",
+    "view_donor",
+    "view_donationsubmission",
+    "change_donationsubmission",
+    "view_donationphoto",
+
 ]
 
 ADMINISTRATOR_PERMISSIONS = OPERATOR_PERMISSIONS + [

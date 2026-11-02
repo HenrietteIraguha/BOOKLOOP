@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Thank you | BookLoop{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 640px; margin: 0 auto;">
+  <h1>Thank you!</h1>
+  <p>We have received your donation details. A member of the BookLoop team will contact you to arrange collection.</p>
+  <p class="help">Please note: this confirms that we received your information. The books will be checked once we collect them.</p>
+  <p><a href="{% url 'public:donate' %}">Submit another donation</a></p>
+</div>
+{% endblock %}
