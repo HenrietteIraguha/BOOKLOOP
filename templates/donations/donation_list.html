@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Donations | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tab { padding: 6px 12px; border-radius: 16px; background: #dae8fc; color: #2f4f80; text-decoration: none; font-size: 14px; }
+  .tab.active { background: #2f4f80; color: white; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e8f0; }
+  th { background: #dae8fc; color: #2f4f80; }
+  .status { padding: 2px 8px; border-radius: 10px; font-size: 12px; background: #eef3fb; }
+  .status-pending { background: #fff2cc; color: #7a5a00; }
+  .status-collected, .status-closed { background: #e3f4e1; color: #2e6b25; }
+  .status-rejected { background: #fbe4e4; color: #a32d2d; }
+</style>
+
+<h1>Donations</h1>
+
+<div class="tabs">
+  <a href="{% url 'donations:list' %}" class="tab {% if not selected %}active{% endif %}">All ({{ total }})</a>
+  {% for tab in tabs %}
+    <a href="?status={{ tab.value }}" class="tab {% if tab.value == selected %}active{% endif %}">{{ tab.label }} ({{ tab.count }})</a>
+  {% endfor %}
+</div>
+
+<div class="card table-wrap">
+  {% if submissions %}
+    <table>
+      <thead>
+        <tr><th>Submitted</th><th>Donor</th><th>Area</th><th>Books</th><th>Language</th><th>Photos</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in submissions %}
+          <tr>
+            <td>{{ s.submitted_at|date:"d M Y, H:i" }}</td>
+            <td>{{ s.donor.name }}</td>
+            <td>{{ s.donor.area }}</td>
+            <td>{{ s.number_of_books }}: {{ s.book_types|truncatechars:40 }}</td>
+            <td>{{ s.get_language_display }}</td>
+            <td>{{ s.photo_count }}</td>
+            <td><span class="status status-{{ s.status }}">{{ s.get_status_display }}</span></td>
+            <td><a href="{% url 'donations:detail' s.pk %}">View</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No donations here yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

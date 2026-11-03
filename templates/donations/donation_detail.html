@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Donation from {{ submission.donor.name }} | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  dl { display: grid; grid-template-columns: 180px 1fr; gap: 6px 12px; margin: 0; }
+  dt { font-weight: bold; color: #2f4f80; }
+  dd { margin: 0; }
+  .photos { display: flex; flex-wrap: wrap; gap: 10px; }
+  .photos img { width: 160px; height: 160px; object-fit: cover; border-radius: 6px; border: 1px solid #b9c4d6; }
+  .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; display: inline-block; }
+  select { padding: 7px; }
+  @media (max-width: 600px) { dl { grid-template-columns: 1fr; } }
+</style>
+
+<p><a href="{% url 'donations:list' %}">Back to all donations</a></p>
+<h1>Donation from {{ submission.donor.name }}</h1>
+
+<div class="card">
+  <h3>Donor (private)</h3>
+  <dl>
+    <dt>Name</dt><dd>{{ submission.donor.name }}</dd>
+    <dt>Phone</dt><dd>{{ submission.donor.phone|default:"-" }}</dd>
+    <dt>Email</dt><dd>{{ submission.donor.email|default:"-" }}</dd>
+    <dt>Area</dt><dd>{{ submission.donor.area }}</dd>
+    <dt>Donations so far</dt><dd>{{ submission.donor.submissions.count }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Books offered</h3>
+  <dl>
+    <dt>Submitted</dt><dd>{{ submission.submitted_at|date:"d M Y, H:i" }}</dd>
+    <dt>Number of books</dt><dd>{{ submission.number_of_books }}</dd>
+    <dt>Kinds of books</dt><dd>{{ submission.book_types }}</dd>
+    <dt>Language</dt><dd>{{ submission.get_language_display }}</dd>
+    <dt>General condition</dt><dd>{{ submission.get_condition_display }}</dd>
+    <dt>Message</dt><dd>{{ submission.message|default:"-"|linebreaksbr }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h3>Photos</h3>
+  {% if photos %}
+    <div class="photos">
+      {% for p in photos %}
+        <a href="{% url 'donations:photo' p.pk %}" target="_blank"><img src="{% url 'donations:photo' p.pk %}" alt="Photo of donated books"></a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No photos were added.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Status</h3>
+  <form method="post" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+    {% csrf_token %}
+    {{ form.status }}
+    <button type="submit" class="btn">Update status</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Books registered from this donation</h3>
+  {% if lots %}
+    <ul>
+      {% for lot in lots %}
+        <li>{{ lot.book.title }}: {{ lot.quantity }} ({{ lot.get_condition_display }}, {{ lot.get_status_display }})</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>None yet.</p>
+  {% endif %}
+  <a class="btn" href="{% url 'inventory:register_book' %}?donation={{ submission.pk }}">Register books from this donation</a>
+</div>
+{% endblock %}
