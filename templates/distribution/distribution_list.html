@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Distributions | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  .filters select { padding: 7px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .filters label { display: block; font-size: 13px; font-weight: bold; }
+  .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; display: inline-block; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e8f0; }
+  th { background: #dae8fc; color: #2f4f80; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+  <h1>Distributions</h1>
+  <a href="{% url 'distribution:choose' %}" class="btn">+ Record a distribution</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <div>
+      <label for="recipient">Recipient</label>
+      <select id="recipient" name="recipient" onchange="this.form.submit()">
+        <option value="">All recipients</option>
+        {% for r in recipients %}
+          <option value="{{ r.pk }}" {% if selected_recipient == r.pk|stringformat:"d" %}selected{% endif %}>{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+<p><strong>{{ total }}</strong> cop{{ total|pluralize:"y,ies" }} given out.</p>
+
+<div class="card table-wrap">
+  {% if distributions %}
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Book</th><th>Copies</th><th>Recipient</th><th>Recorded by</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {% for d in distributions %}
+          <tr>
+            <td>{{ d.distribution_date|date:"d M Y" }}</td>
+            <td>{{ d.lot.book.title }}</td>
+            <td>{{ d.quantity }}</td>
+            <td>{{ d.recipient.name }}</td>
+            <td>{{ d.recorded_by.username|default:"-" }}</td>
+            <td>{{ d.notes|default:"-" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No distributions recorded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

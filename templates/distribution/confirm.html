@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm distribution | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  dl { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; margin: 0 0 16px; }
+  dt { font-weight: bold; color: #2f4f80; }
+  dd { margin: 0; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: bold; margin-bottom: 4px; }
+  .field input, .field textarea { width: 100%; padding: 8px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; font-size: 15px; }
+  .btn-light { background: #dae8fc; color: #2f4f80; }
+  @media (max-width: 600px) { dl { grid-template-columns: 1fr; } }
+</style>
+
+<h1>Confirm distribution</h1>
+
+<div class="card">
+  <p>Please check these details before recording. Confirming will reduce the inventory.</p>
+  <dl>
+    <dt>Book</dt><dd>{{ lot.book.title }}{% if lot.book.author %} by {{ lot.book.author }}{% endif %}</dd>
+    <dt>Condition</dt><dd>{{ lot.get_condition_display }}</dd>
+    <dt>Available in this lot</dt><dd>{{ lot.quantity }}</dd>
+    <dt>Recipient</dt><dd>{{ recipient.name }} ({{ recipient.get_recipient_type_display }})</dd>
+    <dt>Contact</dt><dd>{{ recipient.contact_person }}</dd>
+  </dl>
+
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="error">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+    {% for field in form %}
+      <div class="field">
+        {{ field.label_tag }}
+        {% if field.name == "quantity" %}
+          <input type="number" name="quantity" id="{{ field.id_for_label }}" min="1" max="{{ lot.quantity }}"
+                 value="{{ field.value|default:1 }}" required>
+        {% else %}
+          {{ field }}
+        {% endif %}
+        <span class="error">{{ field.errors|join:" " }}</span>
+      </div>
+    {% endfor %}
+    <div class="actions">
+      <button type="submit" class="btn">Confirm and record</button>
+      <a href="{% url 'distribution:choose' %}?recipient={{ recipient.pk }}" class="btn btn-light">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

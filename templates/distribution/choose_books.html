@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Record a distribution | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  .filters input, .filters select { padding: 7px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .filters label { display: block; font-size: 13px; font-weight: bold; }
+  .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; display: inline-block; }
+  .btn-light { background: #dae8fc; color: #2f4f80; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e8f0; }
+  th { background: #dae8fc; color: #2f4f80; }
+  .needs { background: #fff2cc; padding: 10px; border-radius: 4px; }
+</style>
+
+<h1>Record a distribution</h1>
+
+<form method="get">
+  <div class="card">
+    <h3>1. Who are the books for?</h3>
+    <div class="filters">
+      <div style="flex: 1; min-width: 220px;">
+        <label for="recipient">Recipient</label>
+        <select id="recipient" name="recipient" style="width: 100%;" onchange="this.form.submit()">
+          <option value="">Choose a recipient</option>
+          {% for r in recipients %}
+            <option value="{{ r.pk }}" {% if recipient and r.pk == recipient.pk %}selected{% endif %}>{{ r.name }} ({{ r.get_recipient_type_display }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <a href="{% url 'communities:add' %}" class="btn btn-light">+ New recipient</a>
+    </div>
+    {% if recipient %}
+      <p class="needs"><strong>Needs:</strong> {{ recipient.needs_notes|default:"No notes recorded." }}</p>
+    {% endif %}
+  </div>
+
+  {% if recipient %}
+  <div class="card">
+    <h3>2. Find matching books</h3>
+    <div class="filters">
+      <div style="flex: 2; min-width: 180px;">
+        <label for="q">Search</label>
+        <input type="text" id="q" name="q" value="{{ query }}" placeholder="Title, author or subject" style="width: 100%;">
+      </div>
+      {% for f in filters %}
+        <div>
+          <label for="{{ f.name }}">{{ f.label }}</label>
+          <select id="{{ f.name }}" name="{{ f.name }}">
+            <option value="">All</option>
+            {% for value, text in f.choices %}
+              <option value="{{ value }}" {% if value == f.selected %}selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Search</button>
+    </div>
+  </div>
+  {% endif %}
+</form>
+
+{% if recipient %}
+<div class="card table-wrap">
+  {% if lots %}
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Language</th><th>Level</th><th>Type</th><th>Condition</th><th>Available</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for lot in lots %}
+          <tr>
+            <td>{{ lot.book.title }}</td>
+            <td>{{ lot.book.get_language_display }}</td>
+            <td>{{ lot.book.get_education_level_display }}</td>
+            <td>{{ lot.book.get_book_type_display }}</td>
+            <td>{{ lot.get_condition_display }}</td>
+            <td>{{ lot.quantity }}</td>
+            <td><a class="btn" href="{% url 'distribution:confirm' lot.pk recipient.pk %}">Give</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No available books match. Try fewer filters.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

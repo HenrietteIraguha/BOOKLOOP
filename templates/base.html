@@ -32,6 +32,7 @@
         <a href="{% url 'inventory:register_book' %}">Register a book</a>
         <a href="{% url 'inventory:list' %}">Inventory</a>
         <a href="{% url 'communities:list' %}">Recipients</a>
+        <a href="{% url 'distribution:list' %}">Distribution</a>
         <span>Logged in as {{ user.username }}</span>
       </nav>
       <form method="post" action="{% url 'logout' %}">
