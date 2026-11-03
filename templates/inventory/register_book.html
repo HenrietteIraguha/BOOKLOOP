@@ -21,8 +21,16 @@
 
 <h1>Register a book</h1>
 
+{% if donation %}
+<div class="card" style="background: #fff2cc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+  <span>Registering books from <strong>{{ donation.donor.name }}</strong>'s donation ({{ donation.submitted_at|date:"d M Y" }}). Every book you save here is linked to it.</span>
+  <a href="{% url 'donations:detail' donation.pk %}" class="btn btn-light" style="text-decoration: none;">Done: back to the donation</a>
+</div>
+{% endif %}
+
 <form method="post">
   {% csrf_token %}
+  {% if donation %}<input type="hidden" name="donation_id" value="{{ donation.pk }}">{% endif %}
 
   {% for field, value in suggestion.items %}
     <input type="hidden" name="suggested_{{ field }}" value="{{ value }}">

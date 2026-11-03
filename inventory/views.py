@@ -1,14 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db import transaction
-from django.shortcuts import redirect, render
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q, Sum
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
+from donations.models import DonationSubmission
 
 from .forms import BookForm, LotForm
 from .isbn import lookup_isbn, normalise_isbn
 from .models import Book, InventoryLot
 
+# Fields that the ISBN lookup can suggest (FR-02)
 SUGGESTED_FIELDS = ["title", "author", "publisher"]
 
 
@@ -17,12 +21,21 @@ def _values_from_post(post, prefix, fields):
     return {field: post.get(f"{prefix}-{field}", "") for field in fields}
 
 
+def _get_donation(request):
+    """The donation these books came from, if any (FR-14)."""
+    donation_id = request.GET.get("donation") or request.POST.get("donation_id")
+    if donation_id and str(donation_id).isdigit():
+        return DonationSubmission.objects.select_related("donor").filter(pk=donation_id).first()
+    return None
+
+
 @login_required
 @permission_required("inventory.add_book", raise_exception=True)
 def register_book(request):
     suggestion = {}
+    donation = _get_donation(request)
 
-    
+    # 1. "Look up" button: fill in details from the ISBN (FR-02, FR-04)
     if request.method == "POST" and request.POST.get("action") == "lookup":
         book_values = _values_from_post(request.POST, "book", BookForm.Meta.fields)
         lot_values = _values_from_post(request.POST, "lot", LotForm.Meta.fields)
@@ -46,7 +59,7 @@ def register_book(request):
         book_form = BookForm(initial=book_values, prefix="book")
         lot_form = LotForm(initial=lot_values, prefix="lot")
 
-
+    # 2. "Save book" button: save the book, its lot and the first log entry
     elif request.method == "POST":
         book_form = BookForm(request.POST, prefix="book")
         lot_form = LotForm(request.POST, prefix="lot")
@@ -55,15 +68,14 @@ def register_book(request):
             suggestion = {}
 
         if book_form.is_valid() and lot_form.is_valid():
-
+            # How were the details obtained? (NFR-12)
             source = Book.ClassificationSource.MANUAL
             if suggestion:
                 unchanged = all(book_form.cleaned_data[f] == suggestion[f] for f in SUGGESTED_FIELDS)
                 source = (Book.ClassificationSource.TOOL_CONFIRMED if unchanged
                           else Book.ClassificationSource.TOOL_CORRECTED)
 
-            with transaction.atomic(): 
-
+            with transaction.atomic():  # save everything, or nothing
                 isbn = book_form.cleaned_data["isbn"]
                 book = Book.objects.filter(isbn=isbn).first() if isbn else None
                 existing = book is not None
@@ -74,16 +86,28 @@ def register_book(request):
 
                 lot = lot_form.save(commit=False)
                 lot.book = book
-                lot._changed_by = request.user  
+                lot.donation = donation  # FR-14: trace the copies back to their donation
+                lot._changed_by = request.user  # recorded in the status history
                 lot.save()
+
+                # Books are registered after collection, so mark the donation as collected.
+                if donation and donation.status in (DonationSubmission.Status.PENDING,
+                                                    DonationSubmission.Status.CONTACTED):
+                    donation.status = DonationSubmission.Status.COLLECTED
+                    donation.save(update_fields=["status", "updated_at"])
 
             if existing:
                 text = f'Added {lot.quantity} copies to the existing book "{book.title}".'
             else:
                 text = f'Saved "{book.title}" with {lot.quantity} copies.'
             messages.success(request, text + " You can register the next book.")
-            return redirect("inventory:register_book")  # the "More books?" loop
 
+            url = reverse("inventory:register_book")
+            if donation:
+                url += f"?donation={donation.pk}"
+            return redirect(url)  # the "More books?" loop
+
+    # 3. Opening the page: empty forms
     else:
         book_form = BookForm(prefix="book")
         lot_form = LotForm(prefix="lot")
@@ -92,10 +116,11 @@ def register_book(request):
         "book_form": book_form,
         "lot_form": lot_form,
         "suggestion": suggestion,
+        "donation": donation,
     })
 
 
-
+# Filters on the inventory page: (name in the address bar, label, model field, choices)
 INVENTORY_FILTERS = [
     ("language", "Language", "book__language", Book.Language.choices),
     ("book_type", "Type", "book__book_type", Book.BookType.choices),
@@ -131,7 +156,7 @@ def inventory_list(request):
     total_copies = lots.aggregate(total=Sum("quantity"))["total"] or 0
     page = Paginator(lots, 25).get_page(request.GET.get("page"))
 
-
+    # Keep the search and filters when moving between pages
     params = request.GET.copy()
     params.pop("page", None)
 
