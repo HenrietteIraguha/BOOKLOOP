@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: bold; margin-bottom: 4px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 8px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .help { font-size: 13px; color: #666; }
+  .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .btn-main { background: #2f4f80; color: white; border: none; border-radius: 4px; width: 100%; padding: 12px; font-size: 16px; cursor: pointer; }
+  @media (max-width: 600px) { .two-cols { grid-template-columns: 1fr; } }
+</style>
+
+<p><a href="{% url 'communities:list' %}">Back to recipients</a></p>
+<h1>{{ title }}</h1>
+
+<div class="card">
+  <p class="help">Record the adult who receives the books on behalf of the children. Do not record children's names or personal details.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="two-cols">
+      {% for field in form %}
+        <div class="field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
+          <span class="error">{{ field.errors|join:" " }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn-main">Save recipient</button>
+  </form>
+</div>
+{% endblock %}

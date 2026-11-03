@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Recipients | BookLoop{% endblock %}
+
+{% block content %}
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  .filters input, .filters select { padding: 7px; border: 1px solid #b9c4d6; border-radius: 4px; }
+  .filters label { display: block; font-size: 13px; font-weight: bold; }
+  .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; background: #2f4f80; color: white; text-decoration: none; display: inline-block; }
+  .btn-light { background: #dae8fc; color: #2f4f80; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e8f0; }
+  th { background: #dae8fc; color: #2f4f80; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+  <h1>Recipients</h1>
+  <a href="{% url 'communities:add' %}" class="btn">+ Add a recipient</a>
+</div>
+
+<div class="card">
+  <form method="get" class="filters">
+    <div style="flex: 2; min-width: 200px;">
+      <label for="q">Search</label>
+      <input type="text" id="q" name="q" value="{{ query }}" placeholder="Name, district, sector or needs" style="width: 100%;">
+    </div>
+    <div>
+      <label for="type">Type</label>
+      <select id="type" name="type">
+        <option value="">All</option>
+        {% for value, text in types %}
+          <option value="{{ value }}" {% if value == selected_type %}selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn">Search</button>
+    <a href="{% url 'communities:list' %}" class="btn btn-light">Clear</a>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  {% if recipients %}
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>District / sector</th><th>Contact</th><th>Needs</th><th>Books received</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in recipients %}
+          <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.get_recipient_type_display }}</td>
+            <td>{{ r.district }}{% if r.sector %} / {{ r.sector }}{% endif %}</td>
+            <td>{{ r.contact_person }}{% if r.contact_phone %}<br>{{ r.contact_phone }}{% endif %}</td>
+            <td>{{ r.needs_notes|truncatechars:60|default:"-" }}</td>
+            <td>{{ r.books_received|default:0 }}</td>
+            <td><a href="{% url 'communities:edit' r.pk %}">Edit</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No recipients yet. Add the first household, group or school you will give books to.</p>
+  {% endif %}
+</div>
+{% endblock %}
