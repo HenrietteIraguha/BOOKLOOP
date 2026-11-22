@@ -80,3 +80,17 @@ def showcase(request):
         book.cover_colour = COVER_COLOURS[i % len(COVER_COLOURS)]
 
     return render(request, "public/showcase.html", {"stats": stats, "books": books})
+
+
+# ---- Cover photos: public only for books approved for the homepage ----
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
+
+
+def book_cover(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if not book.cover_image:
+        raise Http404
+    if not (book.show_in_showcase or request.user.has_perm("inventory.view_book")):
+        raise Http404
+    return FileResponse(book.cover_image.open("rb"))

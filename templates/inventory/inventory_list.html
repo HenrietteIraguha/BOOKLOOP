@@ -21,7 +21,10 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
   <h1>Inventory</h1>
-  <a href="{% url 'inventory:register_book' %}" class="btn">+ Register a book</a>
+  <span style="display:flex; gap:8px; flex-wrap:wrap;">
+    <a href="{% url 'inventory:showcase' %}" class="btn btn-light">Homepage showcase</a>
+    <a href="{% url 'inventory:register_book' %}" class="btn">+ Register a book</a>
+  </span>
 </div>
 
 <div class="card">

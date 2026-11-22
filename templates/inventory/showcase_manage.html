@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Homepage showcase | BookLoop{% endblock %}
+{% block content %}
+
+<span class="eyebrow">Homepage showcase</span>
+<h1>Choose the books visitors see</h1>
+<p class="lede-small"><b>{{ shown }}</b> book{{ shown|pluralize }} on the homepage. The homepage shows the 8 most recently registered of them. Covers must be JPEG, PNG or WebP, up to 5 MB.</p>
+
+<form method="get" class="search-row">
+  <label for="q" class="visually-hidden">Search books</label>
+  <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search by title, author or ISBN">
+  <button type="submit">Search</button>
+</form>
+
+<div class="manage-list">
+  {% for book in page.object_list %}
+    <div class="card manage-row">
+      <div class="manage-cover">
+        {% if book.cover_image %}
+          <img src="{% url 'public:cover' book.pk %}" alt="Cover of {{ book.title }}">
+        {% else %}
+          <span>No cover</span>
+        {% endif %}
+      </div>
+
+      <div class="manage-info">
+        <b>{{ book.title }}</b>
+        {% if book.author %}<span class="muted">{{ book.author }}</span>{% endif %}
+        {% if book.show_in_showcase %}<span class="chip chip-on">On homepage</span>{% else %}<span class="chip">Hidden</span>{% endif %}
+      </div>
+
+
+      <form method="post" enctype="multipart/form-data" class="manage-upload">
+        {% csrf_token %}
+        <input type="hidden" name="book_id" value="{{ book.pk }}">
+        <label for="cover-{{ book.pk }}">{% if book.cover_image %}Replace cover{% else %}Add a cover photo{% endif %}</label>
+        <input type="file" id="cover-{{ book.pk }}" name="cover" accept="image/jpeg,image/png,image/webp">
+        <button type="submit" name="action" value="upload" class="btn-small">Upload</button>
+      </form>
+
+      <div class="manage-actions">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="book_id" value="{{ book.pk }}">
+          {% if book.show_in_showcase %}
+            <button type="submit" name="action" value="hide" class="btn-small btn-outline">Hide</button>
+          {% else %}
+            <button type="submit" name="action" value="show" class="btn-small">Show on homepage</button>
+          {% endif %}
+        </form>
+        {% if book.cover_image %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="book_id" value="{{ book.pk }}">
+            <button type="submit" name="action" value="remove_cover" class="btn-small btn-outline">Remove cover</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p class="muted">No books found.</p>
+  {% endfor %}
+</div>
+
+
+{% if page.has_other_pages %}
+  <div class="pager">
+    {% if page.has_previous %}<a class="btn btn-outline" href="?q={{ query|urlencode }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn btn-outline" href="?q={{ query|urlencode }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

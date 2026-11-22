@@ -25,6 +25,7 @@
           <a href="{% url 'inventory:list' %}">Inventory</a>
           <a href="{% url 'communities:list' %}">Recipients</a>
           <a href="{% url 'distribution:list' %}">Distribution</a>
+          <a href="{% url 'reports:home' %}">Reports</a>
           <span class="nav-user">{{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" class="logout-form">
             {% csrf_token %}

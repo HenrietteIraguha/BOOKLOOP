@@ -168,3 +168,64 @@ def inventory_list(request):
         "total_copies": total_copies,
         "querystring": params.urlencode(),
     })
+
+
+# ---- Homepage showcase management (FR-20) ----
+import os
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+
+from donations.images import check_and_clean_image
+from .models import Book
+
+
+@login_required
+@permission_required("inventory.change_book", raise_exception=True)
+def showcase_manage(request):
+    """Operators choose which books appear on the public homepage and add covers."""
+    if request.method == "POST":
+        book = get_object_or_404(Book, pk=request.POST.get("book_id"))
+        action = request.POST.get("action")
+
+        if action == "show":
+            book.show_in_showcase = True
+            book.save()
+            messages.success(request, f"“{book.title}” is now on the homepage.")
+        elif action == "hide":
+            book.show_in_showcase = False
+            book.save()
+            messages.success(request, f"“{book.title}” was removed from the homepage.")
+        elif action == "upload":
+            upload = request.FILES.get("cover")
+            if not upload:
+                messages.error(request, "Choose a photo first.")
+            else:
+                try:
+                    cleaned = check_and_clean_image(upload)  # size, type, resize, strip location data
+                except ValidationError as error:
+                    messages.error(request, " ".join(error.messages))
+                else:
+                    ext = os.path.splitext(getattr(cleaned, "name", "") or upload.name)[1].lower() or ".jpg"
+                    if book.cover_image:
+                        book.cover_image.delete(save=False)
+                    book.cover_image.save(f"book-{book.pk}{ext}", cleaned, save=True)
+                    messages.success(request, f"Cover added to “{book.title}”.")
+        elif action == "remove_cover" and book.cover_image:
+            book.cover_image.delete(save=True)
+            messages.success(request, f"Cover removed from “{book.title}”.")
+
+        return redirect(request.get_full_path())
+
+    query = request.GET.get("q", "").strip()
+    books = Book.objects.order_by("-show_in_showcase", "title")
+    if query:
+        books = books.filter(Q(title__icontains=query) | Q(author__icontains=query) | Q(isbn__icontains=query))
+    page = Paginator(books, 20).get_page(request.GET.get("page"))
+    shown = Book.objects.filter(show_in_showcase=True).count()
+    return render(request, "inventory/showcase_manage.html",
+                  {"page": page, "query": query, "shown": shown})

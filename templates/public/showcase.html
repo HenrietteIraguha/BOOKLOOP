@@ -35,7 +35,7 @@
       {% for book in books %}
         <div class="card book-card">
           {% if book.cover_image %}
-            <div class="book-cover photo"><img src="{{ book.cover_image.url }}" alt="Cover of {{ book.title }}"></div>
+            <div class="book-cover photo"><img src="{% url 'public:cover' book.pk %}" alt="Cover of {{ book.title }}"></div>
           {% else %}
             <div class="book-cover" style="background: {{ book.cover_colour }}">{{ book.title }}</div>
           {% endif %}

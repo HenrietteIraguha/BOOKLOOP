@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Reports | BookLoop{% endblock %}
+{% block content %}
+
+<span class="eyebrow">Reports</span>
+<h1>How BookLoop is doing</h1>
+
+<h2 class="report-h">Pilot progress</h2>
+<div class="report-grid">
+  <div class="card stat-card">
+    <span class="stat-label">Donations received</span>
+    <span class="stat-big">{{ pilot.donations }} <small>of {{ pilot.donation_target }}</small></span>
+    <div class="bar" role="img" aria-label="{{ pilot.donation_pct }}% of the target"><span style="width: {{ pilot.donation_pct }}%"></span></div>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-label">Books collected</span>
+    <span class="stat-big">{{ pilot.books }} <small>of {{ pilot.book_target }}</small></span>
+    <div class="bar" role="img" aria-label="{{ pilot.book_pct }}% of the target"><span style="width: {{ pilot.book_pct }}%"></span></div>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-label">Collected books assessed</span>
+    <span class="stat-big">{{ pilot.assessed_pct }}%</span>
+    <span class="stat-note">checked and accepted or rejected</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-label">Distributions with destination and date</span>
+    <span class="stat-big">{% if pilot.dist_total %}{{ pilot.recorded_pct }}%{% else %}–{% endif %}</span>
+    <span class="stat-note">{% if pilot.dist_total %}of {{ pilot.dist_total }} distributions{% else %}no distributions yet{% endif %}</span>
+  </div>
+</div>
+
+
+<h2 class="report-h">Inventory</h2>
+<div class="card">
+  <table>
+    <tr><th>Books collected</th><th>Accepted</th><th>Rejected</th><th>Waiting for assessment</th><th>Available now</th><th>Distributed</th></tr>
+    <tr><td>{{ inv.collected }}</td><td>{{ inv.accepted }}</td><td>{{ inv.rejected }}</td><td>{{ inv.pending }}</td><td><b>{{ inv.available }}</b></td><td>{{ inv.distributed }}</td></tr>
+  </table>
+</div>
+
+<div class="report-two">
+  <div class="card">
+    <h3>Available books by level</h3>
+    {% for row in by_level %}
+      <div class="hbar"><span class="hbar-label">{{ row.label }}</span><span class="hbar-track"><span style="width: {{ row.width }}%"></span></span><b>{{ row.n }}</b></div>
+    {% empty %}<p class="muted">No available books yet.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h3>Available books by type</h3>
+    {% for row in by_type %}
+      <div class="hbar"><span class="hbar-label">{{ row.label }}</span><span class="hbar-track"><span style="width: {{ row.width }}%"></span></span><b>{{ row.n }}</b></div>
+    {% empty %}<p class="muted">No available books yet.</p>{% endfor %}
+  </div>
+</div>
+
+<h2 class="report-h">Donation history</h2>
+<div class="report-two">
+  <div class="card">
+    <h3>By status</h3>
+    <table>
+      <tr><th>Status</th><th>Donations</th></tr>
+      {% for row in by_status %}<tr><td>{{ row.label }}</td><td>{{ row.n }}</td></tr>
+      {% empty %}<tr><td colspan="2">No donations yet.</td></tr>{% endfor %}
+
+    </table>
+  </div>
+  <div class="card">
+    <h3>By month</h3>
+    <table>
+      <tr><th>Month</th><th>Donations</th></tr>
+      {% for row in by_month %}<tr><td>{{ row.month|date:"F Y" }}</td><td>{{ row.n }}</td></tr>
+      {% empty %}<tr><td colspan="2">No donations yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+
+<h2 class="report-h">Distribution history</h2>
+<div class="report-two">
+  <div class="card">
+    <h3>Latest distributions</h3>
+    <table>
+      <tr><th>Date</th><th>Recipient</th><th>Book</th><th>Copies</th></tr>
+      {% for d in recent %}<tr><td>{{ d.distribution_date|date:"j M Y" }}</td><td>{{ d.recipient.name }}</td><td>{{ d.lot.book.title }}</td><td>{{ d.quantity }}</td></tr>
+      {% empty %}<tr><td colspan="4">No distributions yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h3>Books by recipient type</h3>
+    <table>
+      <tr><th>Recipient type</th><th>Books</th></tr>
+      {% for row in by_recipient_type %}<tr><td>{{ row.label }}</td><td>{{ row.n }}</td></tr>
+      {% empty %}<tr><td colspan="2">No distributions yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}
