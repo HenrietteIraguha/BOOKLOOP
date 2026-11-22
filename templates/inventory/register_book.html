@@ -103,6 +103,7 @@
   var stopBtn = document.getElementById("scan-stop");
   var fileInput = document.getElementById("scan-file");
   var status = document.getElementById("scan-status");
+  var hintTimer = null;
 
   if (typeof Html5Qrcode === "undefined") {
     startBtn.hidden = true;
@@ -117,6 +118,7 @@
       Html5QrcodeSupportedFormats.EAN_8,
       Html5QrcodeSupportedFormats.UPC_A
     ],
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true },
     verbose: false
   });
 
@@ -130,19 +132,25 @@
     status.textContent = "Starting the camera...";
     scanner.start(
       { facingMode: "environment" },          // back camera on phones
-      { fps: 10, qrbox: { width: 300, height: 120 } },
-      function (code) { scanner.stop().then(function () { useCode(code); }); },
+      { fps: 15,
+        qrbox: function (w, h) { return { width: Math.floor(w * 0.85), height: Math.floor(Math.min(h * 0.45, 220)) }; },
+        videoConstraints: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } },
+      function (code) { clearTimeout(hintTimer); scanner.stop().then(function () { startBtn.hidden = false; stopBtn.hidden = true; useCode(code); }); },
       function () {}                          // ignore frames with no barcode
     ).then(function () {
       startBtn.hidden = true;
       stopBtn.hidden = false;
       status.textContent = "Hold the barcode on the back of the book inside the box.";
+      hintTimer = setTimeout(function () {
+        status.textContent = "Still looking. Hold the barcode flat, about 10 to 15 cm from the camera, in good light, and keep it still. A phone's back camera works much better than a laptop webcam. You can also upload a photo of the barcode or type the ISBN.";
+      }, 12000);
     }).catch(function (err) {
       status.textContent = "The camera could not start (" + err + "). Upload a photo of the barcode or type the ISBN instead.";
     });
   });
 
   stopBtn.addEventListener("click", function () {
+    clearTimeout(hintTimer);
     scanner.stop().then(function () {
       startBtn.hidden = false;
       stopBtn.hidden = true;
