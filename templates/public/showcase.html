@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}BookLoop · Books for every child{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-text">
+    <span class="eyebrow">Books for every child</span>
+    <h1>Your old school books can teach one more child</h1>
+    <p class="lede">Families donate the books their children have outgrown. We collect, sort and pass them on to children who have no library: households, community groups and schools across Rwanda.</p>
+    <div class="hero-actions">
+      <a href="{% url 'public:donate' %}" class="btn">Donate your books</a>
+      <a href="#books" class="btn btn-outline">See the books</a>
+    </div>
+  </div>
+
+  <div class="hero-side">
+    <svg viewBox="0 0 480 340" role="img" aria-label="Donated books in a box, with a heart above">
+      <circle cx="240" cy="185" r="140" fill="#F3E8CF"></circle>
+      <path d="M240 78 c-11-16 -38-9 -38 11 c0 18 22 29 38 42 c16-13 38-24 38-42 c0-20 -27-27 -38-11 z" fill="#B05E14"></path>
+      <g transform="rotate(-8 188 160)"><rect x="165" y="105" width="46" height="110" rx="3" fill="#B05E14"></rect><rect x="165" y="105" width="46" height="9" rx="3" fill="#F7EFDC"></rect></g>
+      <g transform="rotate(3 240 150)"><rect x="215" y="95" width="50" height="120" rx="3" fill="#31556B"></rect><rect x="215" y="95" width="50" height="9" rx="3" fill="#F7EFDC"></rect></g>
+      <g transform="rotate(10 292 160)"><rect x="270" y="110" width="44" height="105" rx="3" fill="#44633F"></rect><rect x="270" y="110" width="44" height="9" rx="3" fill="#F7EFDC"></rect></g>
+      <rect x="150" y="168" width="180" height="36" fill="#8F6B3F"></rect>
+      <polygon points="140,198 98,156 152,168" fill="#B98A52"></polygon>
+      <polygon points="340,198 382,156 328,168" fill="#B98A52"></polygon>
+      <rect x="140" y="198" width="200" height="104" rx="6" fill="#C89B66"></rect>
+      <rect x="140" y="198" width="200" height="16" fill="#B98A52"></rect>
+      <path d="M118 96 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 z" fill="#D9A441"></path>
+      <path d="M372 108 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 z" fill="#D9A441"></path>
+      <path d="M352 48 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" fill="#D9A441"></path>
+    </svg>
+    <div class="panel-sand">
+      <h3>So far, together</h3>
+      <div class="stat-row"><span>Books collected</span><b>{{ stats.books_collected }}</b></div>
+      <div class="stat-row"><span>Donations received</span><b>{{ stats.donations }}</b></div>
+      <div class="stat-row"><span>Communities reached</span><b>{{ stats.communities }}</b></div>
+    </div>
+  </div>
+</section>
+
+<section id="books">
+  <div class="section-head">
+    <h2>Recently donated</h2>
+    <span>waiting for their next reader</span>
+  </div>
+  {% if books %}
+    <div class="book-grid">
+      {% for book in books %}
+        <div class="card book-card">
+          {% if book.cover_image %}
+            <div class="book-cover photo"><img src="{{ book.cover_image.url }}" alt="Cover of {{ book.title }}"></div>
+          {% else %}
+            <div class="book-cover" style="background: {{ book.cover_colour }}">{{ book.title }}</div>
+          {% endif %}
+          <b>{{ book.title }}</b>
+          <div class="chips">
+            <span class="chip">{{ book.get_language_display }}</span>
+            <span class="chip">{{ book.get_book_type_display }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty-shelf">
+      <p>The first donated books will appear here soon.</p>
+      <a href="{% url 'public:donate' %}" class="btn">Be the first to donate</a>
+    </div>
+  {% endif %}
+</section>
+
+<section class="how panel-sand">
+  <h2>How it works</h2>
+  <div class="how-grid">
+    <div class="how-step">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+      <div><b>1 · You donate</b><span>Fill in the short form. No account needed. Tell us what books you have.</span></div>
+    </div>
+    <div class="how-step">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"></rect><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+      <div><b>2 · We collect and sort</b><span>We contact you, collect the books, check them and record each one.</span></div>
+    </div>
+    <div class="how-step">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      <div><b>3 · A child reads</b><span>Books go to households, community groups and school lending shelves.</span></div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -5,50 +5,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}BookLoop{% endblock %}</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fa; color: #222; }
-    header { background: #2f4f80; color: white; padding: 12px 20px;
-             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    header a { color: white; text-decoration: none; margin-right: 16px; }
-    header .brand { font-weight: bold; font-size: 20px; }
-    header button { background: white; color: #2f4f80; border: none; padding: 6px 12px;
-                    border-radius: 4px; cursor: pointer; }
-    main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .messages { list-style: none; padding: 0; }
-    .messages li { background: #dae8fc; padding: 10px; border-radius: 4px; margin-bottom: 8px; }
-    .error { color: #a32d2d; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/bookloop.css' %}">
 </head>
 <body>
-  <header>
-    <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'public:donate' %}{% endif %}" class="brand">BookLoop</a>
-    {% if user.is_authenticated %}
-      <nav>
-        <a href="{% url 'dashboard:home' %}">Home</a>
-        <a href="{% url 'donations:list' %}">Donations</a>
-        <a href="{% url 'inventory:register_book' %}">Register a book</a>
-        <a href="{% url 'inventory:list' %}">Inventory</a>
-        <a href="{% url 'communities:list' %}">Recipients</a>
-        <a href="{% url 'distribution:list' %}">Distribution</a>
-        <span>Logged in as {{ user.username }}</span>
+  <header class="site-header">
+    <div class="container">
+      <a href="{% if user.is_authenticated %}{% url 'dashboard:home' %}{% else %}{% url 'public:home' %}{% endif %}" class="brand">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B05E14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        BookLoop
+      </a>
+      <nav class="nav-links">
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:home' %}">Home</a>
+          <a href="{% url 'donations:list' %}">Donations</a>
+          <a href="{% url 'inventory:register_book' %}">Register a book</a>
+          <a href="{% url 'inventory:list' %}">Inventory</a>
+          <a href="{% url 'communities:list' %}">Recipients</a>
+          <a href="{% url 'distribution:list' %}">Distribution</a>
+          <span class="nav-user">{{ user.username }}</span>
+          <form method="post" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+
+          </form>
+        {% else %}
+          <a href="{% url 'public:donate' %}" class="btn">Donate books</a>
+        {% endif %}
       </nav>
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Log out</button>
-      </form>
-    {% endif %}
+    </div>
   </header>
 
-  <main>
+  <main class="container">
     {% if messages %}
       <ul class="messages">
-        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+        {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
       </ul>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span><b>BookLoop</b> · A student project at African Leadership University</span>
+      {% if not user.is_authenticated %}
+        <a href="{% url 'login' %}" style="margin-left:auto">Staff login</a>
+      {% endif %}
+    </div>
+  </footer>
 </body>
 </html>

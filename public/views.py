@@ -49,3 +49,34 @@ def donate(request):
 
 def donate_thanks(request):
     return render(request, "public/donate_thanks.html")
+
+# ---- Public home page: the showcase (FR-20) ----
+from django.db.models import Sum
+
+from communities.models import Recipient
+from distribution.models import Distribution
+from inventory.models import Book, InventoryLot
+
+COVER_COLOURS = ["#7A6248", "#9C5A20", "#44633F", "#31556B",
+                 "#8C4A5E", "#3F6B5C", "#A8702A", "#5B5B7A"]
+
+
+def showcase(request):
+    """Books first, donating one click away. Only books staff approved are shown."""
+    lots = InventoryLot.objects.exclude(status=InventoryLot.Status.REJECTED)
+    still_here = lots.aggregate(n=Sum("quantity"))["n"] or 0
+    given_out = Distribution.objects.aggregate(n=Sum("quantity"))["n"] or 0
+
+    stats = {
+        "books_collected": still_here + given_out,
+        "donations": DonationSubmission.objects.exclude(
+            status=DonationSubmission.Status.REJECTED).count(),
+        "communities": Recipient.objects.filter(
+            distributions__isnull=False).distinct().count(),
+    }
+
+    books = list(Book.objects.filter(show_in_showcase=True).order_by("-id")[:8])
+    for i, book in enumerate(books):
+        book.cover_colour = COVER_COLOURS[i % len(COVER_COLOURS)]
+
+    return render(request, "public/showcase.html", {"stats": stats, "books": books})
