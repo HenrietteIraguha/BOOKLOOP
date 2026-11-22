@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}BookLoop · Books for every child{% endblock %}
 {% block content %}
 
@@ -14,21 +15,7 @@
   </div>
 
   <div class="hero-side">
-    <svg viewBox="0 0 480 340" role="img" aria-label="Donated books in a box, with a heart above">
-      <circle cx="240" cy="185" r="140" fill="#F3E8CF"></circle>
-      <path d="M240 78 c-11-16 -38-9 -38 11 c0 18 22 29 38 42 c16-13 38-24 38-42 c0-20 -27-27 -38-11 z" fill="#B05E14"></path>
-      <g transform="rotate(-8 188 160)"><rect x="165" y="105" width="46" height="110" rx="3" fill="#B05E14"></rect><rect x="165" y="105" width="46" height="9" rx="3" fill="#F7EFDC"></rect></g>
-      <g transform="rotate(3 240 150)"><rect x="215" y="95" width="50" height="120" rx="3" fill="#31556B"></rect><rect x="215" y="95" width="50" height="9" rx="3" fill="#F7EFDC"></rect></g>
-      <g transform="rotate(10 292 160)"><rect x="270" y="110" width="44" height="105" rx="3" fill="#44633F"></rect><rect x="270" y="110" width="44" height="9" rx="3" fill="#F7EFDC"></rect></g>
-      <rect x="150" y="168" width="180" height="36" fill="#8F6B3F"></rect>
-      <polygon points="140,198 98,156 152,168" fill="#B98A52"></polygon>
-      <polygon points="340,198 382,156 328,168" fill="#B98A52"></polygon>
-      <rect x="140" y="198" width="200" height="104" rx="6" fill="#C89B66"></rect>
-      <rect x="140" y="198" width="200" height="16" fill="#B98A52"></rect>
-      <path d="M118 96 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 z" fill="#D9A441"></path>
-      <path d="M372 108 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 z" fill="#D9A441"></path>
-      <path d="M352 48 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" fill="#D9A441"></path>
-    </svg>
+    <img class="hero-photo" src="{% static 'images/hero.jpg' %}" alt="Donated books ready for their next reader">
     <div class="panel-sand">
       <h3>So far, together</h3>
       <div class="stat-row"><span>Books collected</span><b>{{ stats.books_collected }}</b></div>
