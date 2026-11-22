@@ -3,50 +3,74 @@
 {% block title %}BookLoop · Books for every child{% endblock %}
 {% block content %}
 
-<section class="hero">
-  <div class="hero-text">
-    <span class="eyebrow">Books for every child</span>
-    <h1>Your old school books can teach one more child</h1>
-    <p class="lede">Families donate the books their children have outgrown. We collect, sort and pass them on to children who have no library: households, community groups and schools across Rwanda.</p>
+<div class="home-hero">
+  <div>
+    <h1 class="hero-title">Your old books,<br>a child’s <span class="hl">next chapter</span></h1>
+    <p class="lede">Families in Kigali donate the school books their children have outgrown. We collect them, check every copy, and pass them on to children who have no library at home or at school.</p>
     <div class="hero-actions">
-      <a href="{% url 'public:donate' %}" class="btn">Donate your books</a>
-      <a href="#books" class="btn btn-outline">See the books</a>
+      <a class="btn" href="{% url 'public:donate' %}">Donate your books</a>
+      <a class="btn btn-outline" href="#books">See the books</a>
+    </div>
+
+    <div class="stats" aria-label="BookLoop so far">
+      <div class="stat"><span class="dot" style="background: var(--butter)" aria-hidden="true">B</span><div class="num" data-count="{{ stats.books_collected }}">{{ stats.books_collected }}</div><div class="label">Books collected</div><div class="sub">and checked by hand</div></div>
+      <div class="stat"><span class="dot" style="background: var(--peach)" aria-hidden="true">D</span><div class="num" data-count="{{ stats.donations }}">{{ stats.donations }}</div><div class="label">Donations</div><div class="sub">from families in Kigali</div></div>
+      <div class="stat"><span class="dot" style="background: var(--mint)" aria-hidden="true">C</span><div class="num" data-count="{{ stats.communities }}">{{ stats.communities }}</div><div class="label">Communities</div><div class="sub">households, groups and schools</div></div>
     </div>
   </div>
 
-  <div class="hero-side">
-    <img class="hero-photo" src="{% static 'images/hero.jpg' %}" alt="Donated books ready for their next reader">
-    <div class="panel-sand">
-      <h3>So far, together</h3>
-      <div class="stat-row"><span>Books collected</span><b>{{ stats.books_collected }}</b></div>
-      <div class="stat-row"><span>Donations received</span><b>{{ stats.donations }}</b></div>
-      <div class="stat-row"><span>Communities reached</span><b>{{ stats.communities }}</b></div>
+  <div class="quick" id="donate">
+    <div class="quick-photo"><img src="{% static 'images/hero.jpg' %}" alt="Children reading donated books"></div>
+    <div class="quick-body">
+      <h2>Donate in 2 minutes</h2>
+      <p class="q" id="q-count">How many books do you have?</p>
+      <div class="choices" role="group" aria-labelledby="q-count" data-group="n">
+        <button type="button" class="choice" data-value="5" aria-pressed="true">1 to 10</button>
+        <button type="button" class="choice" data-value="20" aria-pressed="false">11 to 30</button>
+        <button type="button" class="choice" data-value="40" aria-pressed="false">More than 30</button>
+      </div>
+
+      <p class="q" id="q-lang">Mostly in which language?</p>
+      <div class="choices" role="group" aria-labelledby="q-lang" data-group="lang">
+        <button type="button" class="choice" data-value="rw" aria-pressed="false">Kinyarwanda</button>
+        <button type="button" class="choice" data-value="en" aria-pressed="true">English</button>
+        <button type="button" class="choice" data-value="fr" aria-pressed="false">French</button>
+      </div>
+      <div class="impact" aria-live="polite"><span>Your books could reach</span><b id="impact">about 5 children</b></div>
+      <a class="btn btn-dark btn-wide" id="quick-go" data-base="{% url 'public:donate' %}" href="{% url 'public:donate' %}">Continue to the form →</a>
     </div>
   </div>
-</section>
+</div>
 
-<section id="books">
+<section class="home-section" id="books" aria-roledescription="carousel" aria-label="Recently donated books">
   <div class="section-head">
-    <h2>Recently donated</h2>
-    <span>waiting for their next reader</span>
+    <div>
+      <h2 class="big">Recently donated</h2>
+      <p>Books checked and waiting for their next reader</p>
+    </div>
+    <div class="arrows" id="arrows">
+      <button type="button" class="arrow" id="prev" aria-label="Previous books">←</button>
+      <button type="button" class="arrow" id="next" aria-label="Next books">→</button>
+    </div>
   </div>
   {% if books %}
-    <div class="book-grid">
-      {% for book in books %}
-        <div class="card book-card">
-          {% if book.cover_image %}
-            <div class="book-cover photo"><img src="{% url 'public:cover' book.pk %}" alt="Cover of {{ book.title }}"></div>
-          {% else %}
-            <div class="book-cover" style="background: {{ book.cover_colour }}">{{ book.title }}</div>
-          {% endif %}
-          <b>{{ book.title }}</b>
-          <div class="chips">
-            <span class="chip">{{ book.get_language_display }}</span>
-            <span class="chip">{{ book.get_book_type_display }}</span>
-          </div>
-        </div>
-      {% endfor %}
+    <div class="viewport" id="viewport" tabindex="0">
+      <div class="track" id="track">
+        {% for book in books %}
+          <article class="book">
+            {% if book.cover_image %}
+              <div class="cover photo"><img src="{% url 'public:cover' book.pk %}" alt="Cover of {{ book.title }}"></div>
+            {% else %}
+              <div class="cover" style="background: {{ book.cover_colour }}"><span class="lvl">{{ book.get_education_level_display }}</span><span class="t">{{ book.title }}</span></div>
+
+            {% endif %}
+            <span class="title">{{ book.title }}</span>
+            <span class="meta">{{ book.get_language_display }} · {{ book.get_book_type_display }}</span>
+          </article>
+        {% endfor %}
+      </div>
     </div>
+    <div class="dots" id="dots"></div>
   {% else %}
     <div class="card empty-shelf">
       <p>The first donated books will appear here soon.</p>
@@ -55,21 +79,12 @@
   {% endif %}
 </section>
 
-<section class="how panel-sand">
-  <h2>How it works</h2>
-  <div class="how-grid">
-    <div class="how-step">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-      <div><b>1 · You donate</b><span>Fill in the short form. No account needed. Tell us what books you have.</span></div>
-    </div>
-    <div class="how-step">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"></rect><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-      <div><b>2 · We collect and sort</b><span>We contact you, collect the books, check them and record each one.</span></div>
-    </div>
-    <div class="how-step">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A4D12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-      <div><b>3 · A child reads</b><span>Books go to households, community groups and school lending shelves.</span></div>
-    </div>
+<section class="home-section" id="how">
+  <div class="section-head"><h2 class="big">How it works</h2></div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h3>You tell us</h3><p>Fill in the short form. No account needed. Add a photo of the books if you can.</p></div>
+    <div class="step"><div class="n">2</div><h3>We collect and check</h3><p>We call you, pick the books up, check each copy and record its level and language.</p></div>
+    <div class="step"><div class="n">3</div><h3>A child reads</h3><p>Books go to households, community groups and school lending shelves that need them.</p></div>
   </div>
 </section>
 

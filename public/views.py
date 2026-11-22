@@ -43,7 +43,12 @@ def donate(request):
                     DonationPhoto.objects.create(submission=submission, image=photo)
             return redirect("public:donate_thanks")
     else:
-        form = DonationForm()
+        initial = {}
+        if request.GET.get("n", "").isdigit():
+            initial["number_of_books"] = int(request.GET["n"])
+        if request.GET.get("lang") in {"rw", "en", "fr", "mixed", "other"}:
+            initial["language"] = request.GET["lang"]
+        form = DonationForm(initial=initial)
     return render(request, "public/donate.html", {"form": form})
 
 
@@ -57,8 +62,7 @@ from communities.models import Recipient
 from distribution.models import Distribution
 from inventory.models import Book, InventoryLot
 
-COVER_COLOURS = ["#7A6248", "#9C5A20", "#44633F", "#31556B",
-                 "#8C4A5E", "#3F6B5C", "#A8702A", "#5B5B7A"]
+COVER_COLOURS = ["#FFE27A", "#FFD3B0", "#D9EFC4", "#CDE7F5", "#F6D1DD", "#FFF0A8"]
 
 
 def showcase(request):
