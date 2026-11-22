@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-
 {% block title %}Thank you | BookLoop{% endblock %}
-
 {% block content %}
-<div class="card" style="max-width: 640px; margin: 0 auto;">
+<div class="card thanks-card">
+  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#B05E14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
   <h1>Thank you!</h1>
-  <p>We have received your donation details. A member of the BookLoop team will contact you to arrange collection.</p>
-  <p class="help">Please note: this confirms that we received your information. The books will be checked once we collect them.</p>
-  <p><a href="{% url 'public:donate' %}">Submit another donation</a></p>
+  <p>We have received your donation details. We will contact you soon to arrange a time to collect your books.</p>
+  <p>Your books will help a child who has no library.</p>
+  <div class="hero-actions thanks-actions">
+    <a href="{% url 'public:home' %}" class="btn">Back to the homepage</a>
+    <a href="{% url 'public:donate' %}" class="btn btn-outline">Donate more books</a>
+  </div>
 </div>
 {% endblock %}

@@ -204,3 +204,8 @@ main.container { margin-top: 28px; }
 .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center; }
 .hero-photo { width: 100%; max-width: 100%; height: 300px; object-fit: cover; display: block; }
 @media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+
+/* Thank-you page */
+.thanks-card { max-width: 560px; margin: 20px auto; text-align: center; padding: 40px 32px; }
+.thanks-card p { color: var(--muted); }
+.thanks-actions { justify-content: center; margin-top: 18px; }
