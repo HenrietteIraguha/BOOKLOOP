@@ -179,3 +179,8 @@ if env.bool("SECURE_HTTPS", default=False):
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 3600
+
+# Uploaded photos (covers, donation photos) go to Cloudinary when CLOUDINARY_URL is set,
+# because Render's free plan deletes files saved on its own disk at every restart.
+if env("CLOUDINARY_URL", default=""):
+    STORAGES["default"] = {"BACKEND": "config.storage.CloudinaryMediaStorage"}
