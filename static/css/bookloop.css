@@ -302,3 +302,12 @@ h2.big { font-size: clamp(1.9rem, 3.6vw, 2.7rem); letter-spacing: -0.8px; margin
 
 .login-card { max-width: 440px; margin: 30px auto; padding: 32px 30px; }
 .login-card button[type=submit] { width: 100%; margin-top: 8px; padding: 14px; }
+
+/* Cover OCR on Register a book */
+.ocr-wrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
+#ocr-preview { width: 140px; border-radius: 12px; border: 1px solid var(--line); }
+.ocr-bar { margin: 6px 0 10px; }
+.ocr-results { display: flex; flex-direction: column; gap: 8px; }
+.ocr-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--butter-soft); border-radius: 12px; padding: 8px 12px; }
+.ocr-line span { flex: 1 1 200px; font-weight: 700; }
+@media (max-width: 560px) { .ocr-wrap { grid-template-columns: minmax(0, 1fr); } }

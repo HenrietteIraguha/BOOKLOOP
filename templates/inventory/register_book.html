@@ -45,6 +45,23 @@
   </div>
 
   <div class="card">
+    <h3>No barcode? Read the cover</h3>
+    <p class="help">Choose or take a photo of the front cover. BookLoop reads the text on this device, so the photo is not uploaded. Then pick which line is the title or the author, and check it before saving.</p>
+    <div class="field">
+      <label for="ocr-file">Photo of the front cover</label>
+      <input type="file" id="ocr-file" accept="image/*">
+    </div>
+    <div class="ocr-wrap">
+      <img id="ocr-preview" alt="The cover photo being read" hidden>
+      <div>
+        <div class="bar ocr-bar" id="ocr-bar" hidden><span></span></div>
+        <p id="ocr-status" class="help" aria-live="polite"></p>
+        <div id="ocr-results" class="ocr-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <h3>2. Book details</h3>
     <p class="help">Check any details that were filled in automatically, and complete the rest.</p>
     <div class="two-cols">
@@ -141,6 +158,145 @@
       .catch(function () {
         status.textContent = "No barcode found in that photo. Try a clearer, closer photo, or type the ISBN.";
       });
+  });
+})();
+</script>
+
+<!-- Cover OCR with Tesseract.js, run in the browser (FR-03, SRS 2.5) -->
+<script>
+(function () {
+  var fileInput = document.getElementById("ocr-file");
+  if (!fileInput) return;
+  var form = fileInput.form;
+  var status = document.getElementById("ocr-status");
+
+  var bar = document.getElementById("ocr-bar");
+  var barFill = bar.querySelector("span");
+  var results = document.getElementById("ocr-results");
+  var preview = document.getElementById("ocr-preview");
+  var targets = {
+    title: document.getElementById("{{ book_form.title.id_for_label }}"),
+    author: document.getElementById("{{ book_form.author.id_for_label }}")
+  };
+  var engine = null;
+
+  function loadEngine() {
+    if (!engine) {
+      engine = new Promise(function (resolve, reject) {
+        var s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+        s.onload = resolve;
+        s.onerror = function () { engine = null; reject(); };
+        document.head.appendChild(s);
+      });
+    }
+    return engine;
+  }
+
+  // Big phone photos are slow to read: shrink to at most 1600 px first.
+  function shrink(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        resolve(c);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  // Tell the server this value came from a tool, so NFR-12 records
+  // "tool confirmed" or "tool corrected", like the ISBN lookup does.
+  function markSuggested(field, value) {
+    var name = "suggested_" + field;
+    var input = form.querySelector('input[name="' + name + '"]');
+    if (!input) {
+      input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      form.appendChild(input);
+    }
+    input.value = value;
+  }
+
+  function fill(field, value, append) {
+    var el = targets[field];
+    el.value = append && el.value ? el.value + " " + value : value;
+    markSuggested(field, el.value);
+    status.textContent = "Filled the " + field + ": “" + el.value + "”. Correct it below if needed.";
+  }
+
+  function button(label, onClick) {
+    var b = document.createElement("button");
+    b.type = "button";
+
+    b.className = "btn btn-small btn-outline";
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function showLines(lines) {
+    results.innerHTML = "";
+    if (!lines.length) {
+      status.textContent = "No text found. Try a sharper photo, taken straight on in good light.";
+      return;
+    }
+    status.textContent = "Tap a button next to a line to use it.";
+    lines.forEach(function (line) {
+      var row = document.createElement("div");
+      row.className = "ocr-line";
+      var text = document.createElement("span");
+      text.textContent = line;
+      row.appendChild(text);
+      row.appendChild(button("Use as title", function () { fill("title", line, false); }));
+      row.appendChild(button("Add to title", function () { fill("title", line, true); }));
+      row.appendChild(button("Use as author", function () { fill("author", line, false); }));
+      results.appendChild(row);
+    });
+  }
+
+  fileInput.addEventListener("change", function () {
+    if (!fileInput.files.length) return;
+    var file = fileInput.files[0];
+    preview.src = URL.createObjectURL(file);
+    preview.hidden = false;
+    results.innerHTML = "";
+
+    bar.hidden = false;
+    barFill.style.width = "5%";
+    status.textContent = "Loading the text reader (the first time can take a minute)...";
+
+    Promise.all([loadEngine(), shrink(file)]).then(function (r) {
+      return Tesseract.createWorker("eng+fra", 1, {
+        logger: function (m) {
+          if (m.status === "recognizing text") {
+            status.textContent = "Reading the cover...";
+            barFill.style.width = Math.round(10 + m.progress * 90) + "%";
+          }
+        }
+      }).then(function (worker) {
+        return worker.recognize(r[1]).then(function (res) {
+          worker.terminate();
+          return res.data.text;
+        });
+      });
+    }).then(function (text) {
+      bar.hidden = true;
+      var lines = text.split("\n")
+        .map(function (l) { return l.replace(/\s+/g, " ").trim(); })
+        .filter(function (l) { return l.length >= 2 && /[A-Za-zÀ-ÿ]/.test(l); });
+      showLines(lines);
+    }).catch(function () {
+      bar.hidden = true;
+      status.textContent = "The text reader could not run (check the internet connection). Type the details instead.";
+    });
   });
 })();
 </script>
