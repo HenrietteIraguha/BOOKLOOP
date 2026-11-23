@@ -29,6 +29,7 @@
           <a href="{% url 'communities:list' %}">Recipients</a>
           <a href="{% url 'distribution:list' %}">Distribution</a>
           <a href="{% url 'reports:home' %}">Reports</a>
+          {% if perms.auth.view_user %}<a href="{% url 'accounts:list' %}">Team</a>{% endif %}
 
           <span class="nav-user">{{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" class="logout-form">
