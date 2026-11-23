@@ -311,3 +311,7 @@ h2.big { font-size: clamp(1.9rem, 3.6vw, 2.7rem); letter-spacing: -0.8px; margin
 .ocr-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--butter-soft); border-radius: 12px; padding: 8px 12px; }
 .ocr-line span { flex: 1 1 200px; font-weight: 700; }
 @media (max-width: 560px) { .ocr-wrap { grid-template-columns: minmax(0, 1fr); } }
+
+/* Change status on the inventory list (FR9) */
+.status-form { display: flex; gap: 6px; align-items: center; margin: 0; }
+.status-form select { width: auto; padding: 6px 10px; font-size: 0.88rem; }

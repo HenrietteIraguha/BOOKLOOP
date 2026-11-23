@@ -229,3 +229,44 @@ def showcase_manage(request):
     shown = Book.objects.filter(show_in_showcase=True).count()
     return render(request, "inventory/showcase_manage.html",
                   {"page": page, "query": query, "shown": shown})
+
+
+# ---- Change a lot's status (FR9) ----
+from django.views.decorators.http import require_POST
+
+from .models import InventoryLot
+
+MANUAL_STATUSES = [
+    InventoryLot.Status.PENDING_ASSESSMENT,
+    InventoryLot.Status.ACCEPTED,
+    InventoryLot.Status.REJECTED,
+    InventoryLot.Status.IN_STORAGE,
+    InventoryLot.Status.ALLOCATED,
+]
+
+
+@login_required
+@permission_required("inventory.change_inventorylot", raise_exception=True)
+@require_POST
+def change_lot_status(request, pk):
+    """Move a lot through assessment, storage and allocation.
+    'Distributed' is only set by recording a distribution (FR17)."""
+    lot = get_object_or_404(InventoryLot, pk=pk)
+    new_status = request.POST.get("status", "")
+
+    if lot.status == InventoryLot.Status.DISTRIBUTED:
+        messages.error(request, f"“{lot.book.title}” has already been distributed, so its status cannot change.")
+    elif new_status not in MANUAL_STATUSES:
+        messages.error(request, "Choose a valid status.")
+    elif new_status == lot.status:
+        messages.info(request, f"“{lot.book.title}” already has that status.")
+
+    else:
+        old_label = lot.get_status_display()
+        lot.status = new_status
+        lot._changed_by = request.user  # recorded in the status history
+        lot.save()
+        messages.success(request, f"“{lot.book.title}”: {old_label} → {lot.get_status_display()}.")
+
+    next_url = request.POST.get("next", "")
+    return redirect(next_url if next_url.startswith("/inventory/") else "inventory:list")
