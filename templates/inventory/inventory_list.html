@@ -41,7 +41,7 @@
       <thead>
         <tr>
           <th>Title</th><th>Author</th><th>ISBN</th><th>Language</th><th>Level</th>
-          <th>Condition</th><th>Qty</th><th>Status</th><th>Collected</th>
+          <th>Condition</th><th>Qty</th><th>Status</th><th>Collected</th><th>Change status</th>
         </tr>
       </thead>
       <tbody>
@@ -56,6 +56,25 @@
             <td>{{ lot.quantity }}</td>
             <td><span class="status status-{{ lot.status }}">{{ lot.get_status_display }}</span></td>
             <td>{{ lot.date_collected|date:"d M Y" }}</td>
+            <td>
+              {% if lot.status == "distributed" %}
+                <span class="muted">Distributed</span>
+              {% else %}
+                <form method="post" action="{% url 'inventory:lot_status' lot.pk %}" class="status-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <label for="status-{{ lot.pk }}" class="visually-hidden">New status for {{ lot.book.title }}</label>
+                  <select id="status-{{ lot.pk }}" name="status">
+                    <option value="pending_assessment" {% if lot.status == "pending_assessment" %}selected{% endif %}>Pending assessment</option>
+                    <option value="accepted" {% if lot.status == "accepted" %}selected{% endif %}>Accepted</option>
+                    <option value="rejected" {% if lot.status == "rejected" %}selected{% endif %}>Rejected</option>
+                    <option value="in_storage" {% if lot.status == "in_storage" %}selected{% endif %}>In storage</option>
+                    <option value="allocated" {% if lot.status == "allocated" %}selected{% endif %}>Allocated</option>
+                  </select>
+                  <button type="submit" class="btn-small">Save</button>
+                </form>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
