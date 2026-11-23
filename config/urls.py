@@ -11,6 +11,7 @@ urlpatterns = [
     path("recipients/", include("communities.urls")),
     path("distribution/", include("distribution.urls")),
     path("reports/", include("reports.urls")),
+    path("team/", include("accounts.urls")),
     path("", include("public.urls")),
     path("", RedirectView.as_view(pattern_name="public:donate")),  # until the showcase home page exists
 ]
