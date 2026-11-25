@@ -261,4 +261,4 @@ Every push to `main` deploys automatically. If it does not, use **Manual Deploy 
 
 ## Documents
 
-- Software Requirements Specification (SRS): [add the link to your SRS here]
+- Software Requirements Specification (SRS):https://docs.google.com/document/d/1-HnQo4Gzf3K5NWCqj--hE1MNC_2aVd-tHczzyO9qcRo/edit?tab=t.0#heading=h.n8qheqbqtgun
