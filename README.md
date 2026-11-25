@@ -11,6 +11,21 @@ Built by Henriette Iraguha for Introduction to Software Engineering, African Lea
 
 ---
 
+## Try it: test accounts
+
+Two test accounts are set up on the live site so reviewers can try both staff roles:
+
+| Username | Role | What you can try |
+|---|---|---|
+| `grader` | Operator | Review donations, register books (barcode, ISBN lookup, cover OCR), search the inventory and change statuses, manage recipients, record distributions, view reports, choose homepage books |
+| `grader-admin` | Administrator | Everything an operator can do, plus the Team page: create accounts, change roles, deactivate accounts |
+
+The passwords are in the project submission document, not in this public repository.
+
+Log in at https://bookloop.henrietteinc.tech/accounts/login/. No account is needed to view the homepage or submit a donation.
+
+---
+
 ## Features
 
 
@@ -211,7 +226,6 @@ Render's free plan deletes files saved on its own disk at every restart, so uplo
 | `CSRF_TRUSTED_ORIGINS` | `https://*.onrender.com,https://bookloop.henrietteinc.tech` |
 | `SECURE_HTTPS` | `True` |
 | `DATABASE_URL` | the Neon connection string (no quotes) |
-
 | `CLOUDINARY_URL` | the value starting with `cloudinary://` (without `CLOUDINARY_URL=` in front) |
 | `DJANGO_SUPERUSER_USERNAME` | the owner account's username |
 | `DJANGO_SUPERUSER_EMAIL` | the owner's email |
